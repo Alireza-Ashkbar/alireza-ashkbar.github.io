@@ -1,92 +1,109 @@
 import { Text } from "@react-three/drei";
-import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import { useRef, useEffect } from "react";
 import * as THREE from "three";
 
 export function FaultModal3D({ fault, onClose }) {
-  const ref = useRef();
-  const { camera } = useThree();
-
-  useFrame(() => {
-    if (!ref.current || !fault) return;
-
-    // Always place modal in front of camera
-    const distance = 2; // 2 units in front
-    const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-    ref.current.position.copy(camera.position.clone().add(dir.multiplyScalar(distance)));
-
-    // Face the camera
-    ref.current.quaternion.copy(camera.quaternion);
-  });
-
-  if (!fault) return null;
-
-  const severityColor =
-    fault.severity === "Critical"
-      ? "#f87171"
-      : fault.severity === "High"
-      ? "#fb923c"
-      : "#facc15";
-
   return (
-    <group ref={ref} position={[-18, 42, -500]}>
-      {/* Background panel */}
+    <group position={[-35, 50, -80]} rotation={[0, Math.PI / 5, 0]} scale={30}>
       <mesh>
-        <planeGeometry args={[1.6, 1]} />
+        <planeGeometry args={[2.1, 1.3]} />
         <meshStandardMaterial color="#111827" />
       </mesh>
 
-      {/* Fault Name */}
-      <Text
-        position={[0, 0.35, 0.01]}
-        fontSize={0.1}
-        color="white"
-        anchorX="center"
-      >
+      <Text position={[0, 0.3, 0.01]} fontSize={0.1} color="white">
         {fault.name}
       </Text>
 
-      {/* Severity */}
-      <Text position={[0, 0.22, 0.01]} fontSize={0.07} color={severityColor}>
-        {fault.severity || "Unknown"} Alert
+      <Text position={[0, 0.1, 0.01]} fontSize={0.07} color="orange">
+        {fault.severity}
       </Text>
 
-      {/* Distance */}
-      <Text position={[0, 0.05, 0.01]} fontSize={0.06} color="#d1d5db">
-        Distance: {fault.distensToStartPoint || "-"} m
-      </Text>
-
-      {/* Marker Size */}
-      <Text position={[0, -0.05, 0.01]} fontSize={0.06} color="#facc15">
-        Marker Size: {fault.size || "-"}
-      </Text>
-
-      {/* Fault ID */}
-      <Text position={[0, -0.15, 0.01]} fontSize={0.05} color="#9ca3af">
-        ID: {fault.id || "-"}
-      </Text>
-
-      {/* Description */}
-      {fault.description && (
-        <Text
-          position={[0, -0.32, 0.01]}
-          fontSize={0.05}
-          maxWidth={1.4}
-          textAlign="center"
-          color="#e5e7eb"
-        >
-          {fault.description}
-        </Text>
-      )}
-
-      {/* Close Button */}
+      {/* Severity Badge */}
       <Text
-        position={[0.7, 0.45, 0.01]}
-        fontSize={0.07}
-        color="red"
+        position={[0, 0.38, 0.01]}
+        fontSize={0.09}
+        color={fault.severity === "High" ? "#fb923c" : "#f87171"}
         anchorX="center"
         anchorY="middle"
+      >
+        {fault.severity.toUpperCase()} ALERT
+      </Text>
+
+      {/* Fault Image (if available) */}
+      {fault.img && (
+        <mesh position={[0, -0.1, 0.02]}>
+          <planeGeometry args={[0.6, 0.3]} />
+          <meshBasicMaterial>
+            <canvasTexture
+              attach="map"
+              image={(function () {
+                const img = new Image();
+                img.src = fault.img;
+                return img;
+              })()}
+            />
+          </meshBasicMaterial>
+        </mesh>
+      )}
+
+      {/* Key Info Grid */}
+      <Text
+        position={[-0.7, -0.35, 0.01]}
+        fontSize={0.06}
+        color="#9ca3af"
+        anchorX="left"
+      >
+        Distance from Start:
+      </Text>
+      <Text
+        position={[0.2, -0.35, 0.01]}
+        fontSize={0.06}
+        color="white"
+        anchorX="right"
+      >
+        {fault.distensToStartPoint} m
+      </Text>
+
+      <Text
+        position={[-0.7, -0.45, 0.01]}
+        fontSize={0.06}
+        color="#9ca3af"
+        anchorX="left"
+      >
+        Detected at:
+      </Text>
+      <Text
+        position={[0.3, -0.45, 0.01]}
+        fontSize={0.06}
+        color="white"
+        anchorX="right"
+      >
+        {fault.timeStamp}
+      </Text>
+
+      <Text
+        position={[-0.7, -0.55, 0.01]}
+        fontSize={0.06}
+        color="#9ca3af"
+        anchorX="left"
+      >
+        Marker Size:
+      </Text>
+      <Text
+        position={[0.2, -0.55, 0.01]}
+        fontSize={0.06}
+        color="#facc15"
+        anchorX="right"
+      >
+        {fault.size}
+      </Text>
+      <Text
+        position={[0.7, 0.45, 0.01]}
+        fontSize={0.08}
+        color="red"
         onClick={onClose}
+        scale={6}
       >
         ×
       </Text>
