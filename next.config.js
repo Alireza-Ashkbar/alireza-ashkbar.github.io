@@ -1,18 +1,9 @@
-// next.config.js
-const webpack = require('webpack');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { webpack }) => {
-    // This fixes potential "THREE is not defined" from legacy deps like three-bmfont-text
-    config.plugins.push(
-      new webpack.ProvidePlugin({
-        THREE: 'three',
-      })
-    );
-
-    return config;
-  },
+  output: 'export', // static export
+  experimental: { appDir: true },
+  basePath: '/alireza-ashkbar.github.io', // GitHub Pages repo path
+  images: { unoptimized: true }, // prevents next/image issues on static export
 };
 
 module.exports = nextConfig;
